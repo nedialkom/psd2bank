@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  web:
+    build: ./app
+    command: gunicorn -c gconfig.py psd2bank.wsgi:application
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
+      - app_volume:/usr/src/app/
+    ports:
+      - 443:80
+      - 80:80
+    env_file:
+      - .env
+    depends_on:
+      - db
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
+      - app_volume:/usr/src/app/
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  app_volume:
